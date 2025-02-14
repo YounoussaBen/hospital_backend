@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  web:
+    image: younoussaben/hospital_backend:latest
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "false"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      REDIS_URL: ${REDIS_URL}
+
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
