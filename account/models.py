@@ -63,7 +63,7 @@ class UserManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, email, password, role, **extra_fields):
         """
         Create and save a SuperUser with the given email and password.
         """
@@ -75,7 +75,7 @@ class UserManager(BaseUserManager):
             raise ValueError(_("Superuser must have is_staff=True."))
         if extra_fields.get("is_superuser") is not True:
             raise ValueError(_("Superuser must have is_superuser=True."))
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(email, password, role, **extra_fields)
 
 
 class User(AbstractUser):
@@ -102,6 +102,14 @@ class User(AbstractUser):
         upload_to="profile_pictures", blank=True, null=True
     )
     is_registration_completed = models.BooleanField(default=False)
+    
+    # New field for role – allowed values: patient or doctor
+    ROLE_CHOICES = (
+        ('patient', _('Patient')),
+        ('doctor', _('Doctor')),
+        ('admin', _('Admin')),
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
     
 
     objects = UserManager()

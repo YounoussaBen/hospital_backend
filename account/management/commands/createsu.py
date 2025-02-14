@@ -13,6 +13,7 @@ class Command(BaseCommand):
         if not User.objects.filter(email=admin_email).exists():
             User.objects.create_superuser(
                 email=admin_email,
-                password=admin_password
+                password=admin_password,
+                role='admin'
             )
         print(f'Superuser {admin_email} has been created.')

@@ -3,13 +3,38 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.response import Response
 from config.testing.base import BaseAPITest
-
+from account.models import User
 
 class UserprofleTest(BaseAPITest):
     def setUp(self):
         self.test_user = UserFactory()
         super().setUp()
 
+    def test_signup(self):
+        url = reverse("account_signup")
+        data = {
+            "name": "Alice Doe",
+            "email": "alice@example.com",
+            "password": "VerySecurePass!123",
+            "role": "patient",
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("token", response.data)
+        self.assertEqual(response.data["user"]["email"], "alice@example.com")
+
+    def test_login(self):
+        # First, create a user
+        user = User.objects.create_user(
+            email="bob@example.com", password="VerySecurePass!123", role="doctor", first_name="Bob", last_name="Smith"
+        )
+        url = reverse("account_login")
+        data = {"email": "bob@example.com", "password": "VerySecurePass!123"}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
+        
     def test_get_userprofile(self):
         url = reverse("account_userprofile")
 
