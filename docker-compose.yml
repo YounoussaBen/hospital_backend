@@ -11,6 +11,7 @@ services:
       DEBUG: "false"
       ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       REDIS_URL: ${REDIS_URL}
+      GEMINY_FLASH_API_KEY: ${GEMINY_FLASH_API_KEY}
 
   redis:
     image: redis:6

@@ -1,11 +1,15 @@
 from celery import shared_task
-from .models import DoctorNote, ActionableStep
 from django.db import transaction
+from .models import DoctorNote, ActionableStep
+from .services.llm import LLMService
+from .services.scheduler import SchedulerService, schedule_check_reminder
+
+from asgiref.sync import async_to_sync
 
 @shared_task
-def process_doctor_note(note_id):
+def process_doctor_note(note_id: str) -> None:
     """
-    Processes a doctor's note to extract actionable steps via LLM integration.
+    Process a doctor's note to extract actionable steps via LLM integration.
     Cancels any previous pending actionable steps for the patient.
     """
     try:
@@ -14,32 +18,39 @@ def process_doctor_note(note_id):
         return
 
     # Cancel previous pending actionable steps for this patient
-    ActionableStep.objects.filter(note__patient=note.patient, status='pending').update(status='cancelled')
+    ActionableStep.objects.filter(
+        note__patient=note.patient, 
+        status='pending'
+    ).update(status='cancelled')
 
-    # Simulate LLM extraction; replace with a real API call as needed
-    extracted_steps = simulate_llm_extraction(note.note_text)
-
+    llm_service = LLMService()
+    scheduler_service = SchedulerService()
+    
+    # Synchronously call the asynchronous method
+    checklist_items, plan_items = async_to_sync(llm_service.extract_actionable_steps)(note.note_text)
+    
     with transaction.atomic():
-        for step in extracted_steps.get('checklist', []):
+        # Create checklist items (one-time tasks)
+        for item in checklist_items:
             ActionableStep.objects.create(
                 note=note,
                 step_type='checklist',
-                description=step,
+                description=item['description'],
             )
-        for step in extracted_steps.get('plan', []):
-            ActionableStep.objects.create(
+        
+        # Create plan items (scheduled tasks)
+        for item in plan_items:
+            schedule = scheduler_service.create_schedule(
+                frequency=item.get('frequency', 'daily'),
+                duration=item.get('duration', 7)
+            )
+            
+            step = ActionableStep.objects.create(
                 note=note,
                 step_type='plan',
-                description=step,
-                schedule={"frequency": "daily", "duration": 7}  # Example scheduling data
+                description=item['description'],
+                schedule=schedule
             )
-
-def simulate_llm_extraction(note_text):
-    """
-    Simulate LLM extraction of actionable steps.
-    Replace this function with a real LLM integration.
-    """
-    return {
-        "checklist": ["Buy the prescription"],
-        "plan": ["Take medication X daily for 7 days"]
-    }
+            
+            # Schedule the reminder task
+            schedule_check_reminder.delay(str(step.id))

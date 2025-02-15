@@ -195,7 +195,12 @@ For production deployment, consider these recommendations:
 - **Scaling:** Leverage load balancing and horizontal scaling.
 - **Security:** Enforce HTTPS, secure cookies, rate limiting on sensitive endpoints, and regular dependency updates.
 
----
+## Deployment
+
+The backend is deployed and accessible at the following addresses:
+
+- **Backend Admin:** [https://hospital-backend-ipbs.onrender.com/admin/](https://hospital-backend-ipbs.onrender.com/admin/)
+- **Swagger API Documentation:** [https://hospital-backend-ipbs.onrender.com/swagger/](https://hospital-backend-ipbs.onrender.com/swagger/)
 
 ## Contributing
 
