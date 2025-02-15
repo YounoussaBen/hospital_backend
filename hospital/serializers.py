@@ -15,10 +15,19 @@ class PatientDoctorAssignmentSerializer(serializers.ModelSerializer):
 # Serializer to display a doctor's assigned patients
 class DoctorPatientAssignmentSerializer(serializers.ModelSerializer):
     patient = UserSerializer(read_only=True)
+    notes = serializers.SerializerMethodField()
 
     class Meta:
         model = DoctorPatientAssignment
-        fields = ('patient',)
+        read_only_fields = ("created", "updated")
+        exclude = ("is_deleted", 'doctor')
+
+    def get_notes(self, obj):
+        doctor = obj.doctor
+        patient = obj.patient
+        notes_qs = DoctorNote.objects.filter(doctor=doctor, patient=patient)
+        return DoctorNoteSerializer(notes_qs, many=True, context=self.context).data
+    
 
 # Serializer to select or deselect doctors for a patient
 class DoctorSelectionActionSerializer(serializers.Serializer):

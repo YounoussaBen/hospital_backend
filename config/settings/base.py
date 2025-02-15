@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'corsheaders',
+    'django_cryptography',
     
     # apps
     'api',
@@ -138,7 +139,8 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
-CELERY_TASK_ALWAYS_EAGER = DEBUG 
+CELERY_TASK_ALWAYS_EAGER = env('CELERY_TASK_ALWAYS_EAGER', default=True)
+CELERY_TASK_EAGER_PROPAGATES = env('CELERY_TASK_EAGER_PROPAGATES', default=True)
 
 GRAPH_MODELS = {
     "all_applications": True,
@@ -239,9 +241,7 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://localho
 
 GEMINY_FLASH_API_KEY = env('GEMINY_FLASH_API_KEY', default='your-default-api-key')
 
-CELERY_TASK_ALWAYS_EAGER = env('CELERY_TASK_ALWAYS_EAGER', default=True)
-CELERY_TASK_EAGER_PROPAGATES = env('CELERY_TASK_EAGER_PROPAGATES', default=True)
-
+FERNET_KEYS = [os.environ.get('FERNET_KEY', 'your-default-key-if-any')]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

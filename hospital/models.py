@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from config.utils.models import BaseModel
+from django_cryptography.fields import encrypt
 
 class DoctorPatientAssignment(BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -25,7 +26,7 @@ class DoctorNote(BaseModel):
     patient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='patient_notes'
     )
-    note_text = models.TextField()
+    note_text = encrypt(models.TextField())
     def __str__(self):
         return f"Note by {self.doctor.email} for {self.patient.email}"
 
