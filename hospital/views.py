@@ -87,7 +87,7 @@ class DoctorNoteCreateView(generics.CreateAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        patient_id = request.data.get('patient_id')
+        patient_id = request.data.get('patient')
         patient = get_object_or_404(User, id=patient_id, role='patient')
         
         # Check that the patient is assigned to this doctor.
@@ -100,7 +100,13 @@ class DoctorNoteCreateView(generics.CreateAPIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        note_text = request.data.get('note')
+        note_text = request.data.get('note_text')
+        if note_text is None:
+            return Response(
+                {'detail': 'The noteText field is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         doctor_note = DoctorNote.objects.create(
             doctor=request.user,
             patient=patient,

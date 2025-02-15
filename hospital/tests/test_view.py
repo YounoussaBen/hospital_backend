@@ -229,8 +229,8 @@ class DoctorNoteIntegrationTest(BaseAPITest):
         self.client.force_authenticate(user=self.doctor)
         
         response = self.client.post(url, {
-            'patient_id': str(self.patient.id),
-            'note': 'Test note content'
+            'patient': str(self.patient.id),
+            'noteText': 'Test note content'
         })
         self.assertEqual(response.status_code, 201)
         

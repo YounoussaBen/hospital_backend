@@ -4,22 +4,37 @@ from celery import shared_task
 from django.utils import timezone
 from hospital.models import ActionableStep
 
+import re
+
+
 class SchedulerService:
     """Service to handle scheduling and managing actionable steps."""
     
     @staticmethod
-    def create_schedule(frequency: str, duration: int) -> Dict:
+    def create_schedule(frequency: str, duration) -> dict:
         """
         Create a schedule configuration for an actionable step.
         
         Args:
             frequency: How often the step should be performed (e.g., 'daily', 'weekly')
-            duration: How long the schedule should continue (in days)
+            duration: How long the schedule should continue (in days). Can be an int or a string like '7 days'.
             
         Returns:
-            Dict containing schedule configuration
+            Dict containing schedule configuration.
         """
         now = timezone.now()
+
+        # If duration is a string like "7 days", extract the number
+        if isinstance(duration, str):
+            match = re.search(r'\d+', duration)
+            if match:
+                duration = int(match.group(0))
+            else:
+                # Fallback to a default duration if extraction fails
+                duration = 7
+        else:
+            duration = int(duration)
+        
         return {
             "frequency": frequency,
             "duration": duration,
